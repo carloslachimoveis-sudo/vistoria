@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LaudoPro — Vistorias & Inventário Imobiliário</title>
+<style>
+:root{--bg:#f2f5f9;--card:#fff;--ink:#17212f;--muted:#5b6b80;--line:#e3e8f0;--navy:#0d1b2c;--navy2:#132a45;--gold:#c8a24a;--gold2:#e8d19a;--ok:#187a4b;--warn:#a86a00;--danger:#b23a32;--blue:#1e5a9e;--sh:0 1px 3px rgba(16,24,40,.08),0 4px 16px rgba(16,24,40,.06)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font:14px/1.5 'Segoe UI',system-ui,-apple-system,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+button{font:inherit;cursor:pointer}
+input,select,textarea{font:inherit;color:var(--ink)}
+#app{display:flex;min-height:100vh}
+#side{width:242px;background:linear-gradient(180deg,var(--navy),#0a1421);color:#cfd8e3;position:fixed;inset:0 auto 0 0;display:flex;flex-direction:column;z-index:50}
+.brand{padding:22px 20px 18px;border-bottom:1px solid rgba(255,255,255,.08)}
+.brand .lg{display:flex;align-items:center;gap:10px}
+.brand .mk{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,var(--gold),#9a7a2e);display:grid;place-items:center;font-size:20px;color:#0d1b2c;font-weight:800}
+.brand b{color:#fff;font-size:15.5px;display:block}
+.brand small{color:var(--gold2);font-size:10px;letter-spacing:1.4px;text-transform:uppercase}
+#nav{flex:1;padding:12px 10px}
+.nav-sec{font-size:10px;letter-spacing:1.6px;color:#5f7292;text-transform:uppercase;padding:14px 12px 6px}
+.nav-it{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:9px;color:#c3cfe0;font-size:13.5px;cursor:pointer;margin-bottom:2px;border:0;background:none;width:100%;text-align:left}
+.nav-it:hover{background:rgba(255,255,255,.06)}
+.nav-it.on{background:linear-gradient(90deg,rgba(200,162,74,.22),rgba(200,162,74,.06));color:#fff;box-shadow:inset 3px 0 0 var(--gold)}
+.side-foot{padding:14px 18px;font-size:11px;color:#6c7f9c;border-top:1px solid rgba(255,255,255,.08)}
+.side-foot b{color:var(--gold2)}
+#main{margin-left:242px;flex:1;padding:0 26px 60px}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:18px 0 14px;border-bottom:1px solid var(--line);margin-bottom:22px}
+.topbar h1{font-size:21px}
+.topbar .crumb{font-size:12px;color:var(--muted);margin-top:2px}
+.tab{display:none}.tab.on{display:block;animation:fade .25s}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--sh);padding:22px;margin-bottom:22px}
+.card h2{font-size:16px;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.card .sub{font-size:12.5px;color:var(--muted);margin-bottom:16px}
+.grid{display:grid;gap:14px}
+.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:1fr 1fr 1fr}.g4{grid-template-columns:repeat(4,1fr)}
+.field label{display:block;font-size:12px;font-weight:600;color:#3a4859;margin-bottom:5px}
+.field input,.field select,.field textarea{width:100%;padding:9px 12px;border:1px solid #d4dae4;border-radius:9px;background:#fbfcfe;outline:none;transition:.15s}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(200,162,74,.18);background:#fff}
+.field textarea{resize:vertical;min-height:80px}
+.btn{border:0;border-radius:9px;padding:10px 18px;font-weight:600;font-size:13.5px;display:inline-flex;align-items:center;gap:7px;transition:.15s}
+.btn:hover{filter:brightness(1.07)}
+.btn-p{background:linear-gradient(135deg,#1b3a5c,#122a44);color:#fff}
+.btn-g{background:linear-gradient(135deg,var(--gold),#a8842f);color:#1d1503}
+.btn-ol{background:#fff;border:1px solid #c9d2df;color:#33465e}
+.btn-sm{padding:6px 11px;font-size:12px;border-radius:7px}
+.btn-d{background:#fdeceb;color:var(--danger);border:1px solid #f3c8c4}
+.tbl-w{overflow:auto;border:1px solid var(--line);border-radius:11px}
+table{width:100%;border-collapse:collapse;font-size:13px;background:#fff}
+th{background:#f6f8fb;text-align:left;padding:10px 13px;font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:#5c6b80;border-bottom:1px solid var(--line)}
+td{padding:9px 11px;border-bottom:1px solid #eef1f6;vertical-align:middle}
+tr:last-child td{border-bottom:0}
+.badge{display:inline-block;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:700}
+.b-blue{background:#e7effb;color:#1e5a9e}.b-gold{background:#faf3df;color:#8a6a1c}
+.b-green{background:#e5f4ec;color:#187a4b}.b-gray{background:#eef1f5;color:#5b6b80}
+.b-red{background:#fdeceb;color:#b23a32}.b-orange{background:#fff0e0;color:#a86a00}
+.acts{display:flex;gap:6px;flex-wrap:wrap}
+.empty{padding:34px;text-align:center;color:var(--muted);font-size:13px}
+.empty .big{font-size:34px;display:block;margin-bottom:8px}
+.searchbar{display:flex;gap:10px;align-items:center;margin-bottom:12px}
+.searchbar input{flex:1;max-width:340px;padding:8px 12px;border:1px solid #d4dae4;border-radius:9px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
+.stat{background:#fff;border:1px solid var(--line);border-radius:13px;padding:16px;box-shadow:var(--sh);position:relative;overflow:hidden}
+.stat:after{content:"";position:absolute;inset:auto 0 0 0;height:3px;background:linear-gradient(90deg,var(--gold),transparent)}
+.stat .n{font-size:26px;font-weight:800;color:var(--navy2)}
+.stat .l{font-size:12px;color:var(--muted)}
+.stat .ic{position:absolute;right:14px;top:14px;font-size:22px}
+.rcard{border:1px solid var(--line);border-radius:12px;background:#fff;margin-bottom:16px;overflow:hidden}
+.rhd{display:flex;align-items:center;gap:10px;padding:12px 15px;background:linear-gradient(90deg,#f7f9fc,#fff);border-bottom:1px solid var(--line)}
+.rhd b{flex:1;font-size:14px;color:var(--navy2)}
+.tbl-itens{width:100%;font-size:12.5px}
+.tbl-itens td{padding:7px 10px}
+.tbl-itens select,.tbl-itens input{width:100%;padding:6px 9px;border:1px solid #d9dfe9;border-radius:7px;background:#fff;font-size:12.5px}
+.rbody{padding:14px 15px}
+.fstrip{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+.fitem{position:relative;width:112px}
+.fitem img{width:112px;height:84px;object-fit:cover;border-radius:8px;border:1px solid var(--line);display:block}
+.fnum{position:absolute;top:4px;left:4px;background:rgba(13,27,44,.85);color:var(--gold2);font-size:10px;font-weight:800;padding:2px 7px;border-radius:6px;letter-spacing:.5px}
+.fdel{position:absolute;top:4px;right:4px;background:rgba(178,58,50,.9);color:#fff;border:0;border-radius:6px;width:20px;height:20px;font-size:11px;line-height:1}
+.addroom{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+.addroom select{padding:9px 12px;border:1px solid #d4dae4;border-radius:9px;background:#fff;min-width:230px}
+.kicker{font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:#8a6a1c;font-weight:700;margin-bottom:6px}
+.chiprow{display:flex;flex-wrap:wrap;gap:8px}
+.chip{padding:7px 13px;border-radius:99px;border:1px solid var(--line);background:#fff;font-size:12.5px;cursor:pointer}
+.chip:hover{border-color:var(--gold);background:#fffdf6}
+.chip.on{background:var(--navy2);color:#fff;border-color:var(--navy2)}
+.sw-mob{display:flex;align-items:center;gap:10px;padding:12px 15px;background:#fffdf6;border:1px dashed var(--gold);border-radius:11px;margin-bottom:16px;font-size:13.5px;font-weight:600;cursor:pointer}
+.sw-mob input{width:19px;height:19px;accent-color:#a8842f}
+.inv-thumb{width:56px;height:42px;object-fit:cover;border-radius:6px;border:1px solid var(--line);display:block}
+.pst-sel{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0}
+.pst-opt{border:2px solid var(--line);border-radius:12px;padding:18px;text-align:center;cursor:pointer;transition:.15s;background:#fff}
+.pst-opt:hover{border-color:var(--gold)}
+.pst-opt b{font-size:18px;display:block;color:var(--navy2)}
+.pst-opt small{color:var(--muted);display:block;margin-top:4px}
+.pst-opt .rec{margin-top:8px}
+#mback{position:fixed;inset:0;background:rgba(10,18,30,.55);backdrop-filter:blur(2px);display:none;place-items:center;z-index:90;padding:20px}
+#mback.on{display:grid}
+#modal{background:#fff;border-radius:15px;max-width:680px;width:100%;max-height:90vh;overflow:auto;padding:26px}
+#toasts{position:fixed;right:20px;bottom:20px;z-index:120;display:flex;flex-direction:column;gap:9px}
+.toast{background:var(--navy);color:#fff;padding:12px 18px;border-radius:10px;font-size:13px;box-shadow:0 8px 24px rgba(0,0,0,.28);border-left:4px solid var(--gold);animation:tin .25s}
+.toast.err{border-left-color:#e0564b}
+@keyframes tin{from{opacity:0;transform:translateX(24px)}to{opacity:1}}
+@media(max-width:900px){#side{position:static;width:100%}#app{flex-direction:column}#main{margin:0;padding:0 14px 40px}.g2,.g3,.g4,.stats{grid-template-columns:1fr 1fr}}
+/* ===== IMPRESSÃO: LAUDO ===== */
+#printRoot{display:none}
+@page{size:A4;margin:18mm 16mm}
+@media print{body{background:#fff}#app,#toasts,#mback{display:none!important}#printRoot{display:block}}
+.lt{font-family:Georgia,'Times New Roman',serif;color:#161616;font-size:10.6pt;line-height:1.55}
+.lt .runfoot{position:fixed;bottom:4mm;left:0;right:0;text-align:center;font:7.6pt Arial,sans-serif;color:#98a0ab;letter-spacing:.4px}
+.lt-cover{page-break-after:always;text-align:center;padding-top:12mm}
+.lt-frame{border:1.6pt solid #14283f;outline:.6pt solid #c8a24a;outline-offset:3.5pt;padding:22mm 13mm;margin:0 4mm}
+.lt-frame .logo img{max-height:24mm;max-width:58mm;object-fit:contain;margin-bottom:7mm}
+.lt-imo{font-size:18pt;letter-spacing:2.5px;text-transform:uppercase;color:#14283f;font-weight:700}
+.lt-imo-sub{font-size:8.4pt;color:#6d7784;letter-spacing:1.2px;margin-top:2mm}
+.lt-orn{margin:8mm auto;color:#c8a24a;font-size:12pt;letter-spacing:8px}
+.lt-title{font-size:17pt;letter-spacing:2px;text-transform:uppercase;color:#14283f;font-weight:700;border-top:.7pt solid #c8a24a;border-bottom:.7pt solid #c8a24a;display:inline-block;padding:3.4mm 9mm}
+.lt-num{margin-top:7mm;font-size:12pt;color:#8a6a1c;font-weight:700;letter-spacing:1.5px}
+.lt-qual{font-size:9.6pt;color:#3c4653;margin-top:7mm;line-height:1.9;text-transform:uppercase;letter-spacing:.5px}
+.lt-code{margin-top:9mm;font-size:8.8pt;color:#828b96;letter-spacing:1.4px}
+.lt-hdbar{width:100%;border-collapse:collapse;margin-bottom:6mm;border-bottom:1.1pt solid #14283f}
+.lt-hdbar td{padding:0 0 2.4mm;font-size:8.6pt;color:#5a6470}
+.lt-hdbar td.r{text-align:right}
+.lt-hdbar b{font-size:10pt;color:#14283f;letter-spacing:.8px}
+.lt h3.sec{font-size:11.4pt;text-transform:uppercase;letter-spacing:.8px;color:#14283f;border-left:3pt solid #c8a24a;padding-left:3mm;margin:6mm 0 3mm}
+.lt h4.sub{font-size:10.6pt;text-transform:uppercase;color:#14283f;margin:4.5mm 0 2mm}
+.lt table.idt{width:100%;border-collapse:collapse;font-size:9.6pt;margin-bottom:3mm}
+.lt table.idt td{border:.6pt solid #cfd5dd;padding:1.8mm 3mm;vertical-align:top}
+.lt table.idt b{display:block;font-size:7.8pt;text-transform:uppercase;letter-spacing:.7px;color:#8a6a1c}
+.lt table.it{width:100%;border-collapse:collapse;font-size:9.2pt;margin-bottom:2.5mm}
+.lt table.it th{background:#14283f;color:#fff;font-size:8pt;text-transform:uppercase;letter-spacing:.6px;padding:1.8mm 2.5mm;border:.5pt solid #14283f;text-align:left}
+.lt table.it td{border:.5pt solid #cfd5dd;padding:1.6mm 2.5mm;vertical-align:top}
+.lt tr.catrow td{background:#efe8d6;font-weight:800;text-transform:uppercase;font-size:8.4pt;letter-spacing:.8px;color:#5a4410}
+.lt .st{font-weight:700;font-size:8.4pt}
+.st-NOVO{color:#1a7f4e}.st-EXCELENTE{color:#1a7f4e}.st-BOM{color:#2b6cb0}.st-REGULAR{color:#a86a00}.st-RUIM{color:#b23a32}.st-INOPERANTE{color:#b23a32}.st-NA{color:#8a94a2}
+.lt .obs{background:#f7f8fa;border:.6pt solid #cfd5dd;border-left:2.5pt solid #c8a24a;padding:2.5mm 3.5mm;font-size:9.4pt;margin:2mm 0 3mm;white-space:pre-wrap}
+.lt .fgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:3mm;margin:2.5mm 0 4mm}
+.lt .foto{break-inside:avoid;text-align:center}
+.lt .foto img{width:100%;height:48mm;object-fit:cover;border:.6pt solid #b9c0ca}
+.lt .foto .cap{font-size:7.8pt;color:#555;margin-top:1mm;font-family:Arial,sans-serif}
+.lt .decl{border:.8pt solid #14283f;background:#f7f8fa;padding:4mm 5mm;font-size:9.8pt;text-align:justify;margin-top:4mm}
+.lt-sig{page-break-inside:avoid;margin-top:12mm;display:flex;gap:10mm}
+.lt-sig .slot{flex:1;text-align:center}
+.lt-sig .ln{border-top:.8pt solid #333;height:8mm;margin-bottom:1.4mm}
+.lt-sig .nm{font-weight:700;font-size:9.8pt}
+.lt-sig .dc{font-size:8.4pt;color:#555}
+/* ===== IMPRESSÃO: FICHA/CARTAZ DO INVENTÁRIO (plastificar) ===== */
+.pst{font-family:Arial,Helvetica,sans-serif;color:#111}
+.pst-frame{border:3pt solid #14283f;padding:7mm 8mm}
+.pst-hd{text-align:center;border-bottom:2.5pt solid #c8a24a;padding-bottom:4mm;margin-bottom:4mm}
+.pst-hd .imo{display:flex;align-items:center;justify-content:center;gap:4mm}
+.pst-hd .imo img{max-height:14mm}
+.pst-hd .imon{font-size:10pt;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#14283f}
+.pst-hd h1{font-size:24pt;letter-spacing:2px;text-transform:uppercase;color:#14283f;margin:3mm 0 1mm}
+.pst-hd .sub{font-size:10.5pt;color:#444}
+.pst-hd .sub b{color:#8a6a1c}
+.pst-rules{border:1.2pt solid #c8a24a;background:#faf6ea;padding:3.5mm 5mm;margin-bottom:4mm;font-size:9.5pt;line-height:1.55}
+.pst-rules b.t{display:block;text-transform:uppercase;letter-spacing:1px;color:#8a6a1c;font-size:8.5pt;margin-bottom:1.5mm}
+.pst-rules ol{margin-left:5mm}
+.pst table{width:100%;border-collapse:collapse;font-size:11pt}
+.pst th{background:#14283f;color:#fff;padding:2.4mm;text-transform:uppercase;font-size:9.5pt;letter-spacing:.8px;border:.8pt solid #14283f}
+.pst td{border:.9pt solid #7d8794;padding:2mm 2.5mm;height:8.5mm}
+.pst tr.catrow td{background:#e9dfc4;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:#5a4410;font-size:10pt;height:auto;padding:2.2mm}
+.pst td.c{text-align:center}
+.pst td.chk{background:#fff}
+.pst-ft{margin-top:5mm;border-top:2pt solid #14283f;padding-top:3mm;display:flex;justify-content:space-between;gap:8mm;font-size:9.5pt;color:#333}
+.pst .ciente{margin-top:6mm;display:flex;gap:12mm;font-size:9.5pt}
+.pst .ciente .ln{flex:1;border-top:.9pt solid #333;padding-top:1.5mm;text-align:center}
+.pst.a3 h1{font-size:32pt}.pst.a3 table{font-size:14pt}.pst.a3 td{height:11mm}
+.pst.a3 .pst-rules{font-size:12pt}.pst.a3 .pst-hd .sub{font-size:13pt}.pst.a3 .pst-ft{font-size:12pt}
+.pst.a3 th{font-size:12pt}
+</style>
+</head>
+<body>
+<div id="app">
+  <aside id="side">
+    <div class="brand"><div class="lg"><div class="mk">📋</div><div><b>LaudoPro</b><small>Vistorias & Inventário</small></div></div></div>
+    <nav id="nav">
+      <div class="nav-sec">Empresa</div>
+      <button class="nav-it on" data-t="cfg"><span>🏛️</span>Imobiliária / Corretor</button>
+      <div class="nav-sec">Vistorias</div>
+      <button class="nav-it" data-t="lista"><span>📁</span>Laudos Emitidos</button>
+      <button class="nav-it" data-t="novo"><span>📸</span>Nova Vistoria</button>
+      <div class="nav-sec">Sistema</div>
+      <button class="nav-it" data-t="bck"><span>💾</span>Backup</button>
+    </nav>
+    <div class="side-foot"><b>LaudoPro</b> v2.0 · IndexedDB local<br>Inventário mobiliados + Ficha A4/A3</div>
+  </aside>
+  <main id="main">
+    <div class="topbar"><div><h1 id="pgTitle">Imobiliária / Corretor</h1><div class="crumb" id="pgCrumb">Configurações que aparecem na capa dos laudos</div></div>
+    <div><button class="btn btn-g" onclick="novaVistoria()">📸 Nova Vistoria</button></div></div>
+
+    <section class="tab on" id="t-cfg">
+      <div class="card"><h2>🏛️ Dados da Imobiliária / Corretor</h2>
+        <div class="sub">Aparecem na capa do laudo e no rodapé da ficha de inventário plastificada</div>
+        <div class="grid g3" id="cfgForm"></div>
+        <div style="margin-top:16px;display:flex;gap:10px;align-items:center">
+          <button class="btn btn-p" onclick="saveCfg()">💾 Salvar Configurações</button><span id="logoPrev"></span>
+        </div>
+      </div>
+    </section>
+
+    <section class="tab" id="t-lista">
+      <div class="stats" id="statsRow"></div>
+      <div class="card"><h2>📁 Laudos Emitidos</h2><div class="sub">Banco IndexedDB do navegador. Ações: PDF do laudo · 📌 Ficha de inventário (A4/A3 plastificável) · editar · duplicar (entrada→saída) · excluir</div>
+        <div class="searchbar"><input id="lstSearch" placeholder="🔎 Buscar por número, imóvel ou parte..." oninput="renderLista()"></div>
+        <div class="tbl-w"><table><thead><tr><th>Nº Laudo</th><th>Tipo</th><th>Imóvel</th><th>Partes</th><th>Data</th><th>Fotos</th><th>Inventário</th><th>Status</th><th>Ações</th></tr></thead><tbody id="lstBody"></tbody></table></div>
+      </div>
+    </section>
+
+    <section class="tab" id="t-novo">
+      <div id="edIntro" class="card" style="text-align:center;padding:50px">
+        <span style="font-size:46px">📸</span>
+        <h2 style="justify-content:center;margin:12px 0 6px">Nenhuma vistoria em edição</h2>
+        <div class="sub">Crie um novo laudo ou abra um existente na aba "Laudos Emitidos"</div>
+        <button class="btn btn-g" onclick="novaVistoria()">➕ Iniciar Nova Vistoria</button>
+      </div>
+      <div id="editor" style="display:none">
+        <div class="card"><div class="kicker">Identificação</div>
+          <div class="grid g4">
+            <div class="field"><label>Nº do Laudo (automático)</label><input id="f_numero" readonly style="background:#eef1f5"></div>
+            <div class="field"><label class="req">Tipo de Vistoria</label><select id="f_tipo" onchange="V.tipo=this.value"></select></div>
+            <div class="field"><label>Data da Vistoria</label><input type="date" id="f_data" onchange="V.data=this.value"></div>
+            <div class="field"><label>Contrato de Locação Vinculado</label><input id="f_contrato" placeholder="Ex.: CTR-2025-0001" oninput="V.contrato=this.value"></div>
+          </div>
+        </div>
+        <div class="card"><div class="kicker">Imóvel e Partes</div>
+          <div class="grid g3">
+            <div class="field" style="grid-column:span 2"><label class="req">Endereço Completo do Imóvel</label><input id="f_end" oninput="V.imovel.endereco=this.value"></div>
+            <div class="field"><label>Cidade/UF</label><input id="f_cid" oninput="V.imovel.cidade=this.value"></div>
+            <div class="field"><label class="req">Locador (Proprietário)</label><input id="f_locador" oninput="V.locador=this.value"></div>
+            <div class="field"><label class="req">Locatário (Inquilino)</label><input id="f_locatario" oninput="V.locatario=this.value"></div>
+            <div class="field"><label>Vistoriador Responsável</label><input id="f_vist" oninput="V.vistoriador=this.value"></div>
+          </div>
+        </div>
+        <div class="card"><div class="kicker">Leituras, Chaves e Observações Gerais</div>
+          <div class="grid g4">
+            <div class="field"><label>Relógio de Energia</label><input id="f_ene" oninput="V.leituras.energia=this.value"></div>
+            <div class="field"><label>Hidrômetro (Água)</label><input id="f_agua" oninput="V.leituras.agua=this.value"></div>
+            <div class="field"><label>Medidor de Gás</label><input id="f_gas" oninput="V.leituras.gas=this.value"></div>
+            <div class="field"><label>Chaves Entregues/Recebidas</label><input id="f_chaves" placeholder="Ex.: 2 porta principal, 1 portão" oninput="V.chaves=this.value"></div>
+          </div>
+          <div class="field" style="margin-top:12px"><label>Observações Gerais do Laudo</label><textarea id="f_obs" oninput="V.obs=this.value"></textarea></div>
+        </div>
+        <div class="card"><div class="kicker">Cômodos / Ambientes</div>
+          <h2>🚪 Cômodos Vistoriados</h2>
+          <div class="sub">Lista suspensa → Adicionar. Fotos numeradas automaticamente em todo o laudo.</div>
+          <div class="addroom">
+            <select id="selComodo"></select>
+            <button class="btn btn-p btn-sm" onclick="addComodoSel()">➕ Adicionar Cômodo</button>
+            <button class="btn btn-ol btn-sm" onclick="addComodoCustom()">✏️ Cômodo Personalizado</button>
+          </div>
+          <div id="comodosWrap"></div>
+        </div>
+        <div class="card"><div class="kicker">Imóvel Mobiliado / Temporada</div>
+          <h2>🛋️ Inventário de Bens Móveis</h2>
+          <div class="sub">Ative para imóveis mobiliados: biblioteca com 80+ itens por categoria, quantidade, marca, estado individual e fotos. Gera também a <b>Ficha de Inventário A4/A3 para plastificar</b>.</div>
+          <label class="sw-mob"><input type="checkbox" id="f_mob" onchange="V.mobiliado=this.checked;renderInv()"> Imóvel mobiliado — incluir inventário completo de bens</label>
+          <div id="invWrap" style="display:none">
+            <div class="chiprow" id="invCats" style="margin-bottom:14px"></div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+              <button class="btn btn-ol btn-sm" onclick="addInvCustom()">➕ Item personalizado</button>
+              <button class="btn btn-g btn-sm" onclick="abrirPosterModal(V)">📌 Prévia da Ficha A4/A3</button>
+              <span class="badge b-gold" id="invCount" style="align-self:center"></span>
+            </div>
+            <div class="tbl-w"><table><thead><tr><th>Item</th><th style="width:130px">Categoria</th><th style="width:64px">Qtd.</th><th style="width:140px">Marca/Modelo</th><th style="width:130px">Estado</th><th>Observações</th><th style="width:90px">Foto</th><th style="width:40px"></th></tr></thead><tbody id="invBody"></tbody></table></div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px">
+          <button class="btn btn-p" onclick="salvar(false)">💾 Salvar Rascunho</button>
+          <button class="btn btn-g" onclick="salvar(true)">✅ Salvar e Finalizar</button>
+          <button class="btn btn-ol" onclick="printV(V)">🖨️ Laudo PDF (A4)</button>
+          <button class="btn btn-ol" onclick="abrirPosterModal(V)">📌 Ficha Inventário (A4/A3)</button>
+          <button class="btn btn-d" onclick="cancelarEdicao()">✖ Cancelar</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="tab" id="t-bck">
+      <div class="card"><h2>💾 Backup Geral (IndexedDB)</h2>
+        <div class="sub">Exporta configurações, laudos, fotos e inventários. Faça backups regulares!</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn btn-p" onclick="exportBackup()">⬇️ Exportar Backup (JSON)</button>
+          <label class="btn btn-ol">⬆️ Importar Backup<input type="file" accept=".json" hidden onchange="importBackup(this)"></label>
+          <button class="btn btn-ol" onclick="checkStorage()">🔍 Ver espaço usado</button>
+        </div>
+        <div id="storageInfo" style="margin-top:14px;font-size:13px;color:var(--muted)"></div>
+      </div>
+    </section>
+  </main>
+</div>
+<div id="mback" onclick="if(event.target===this)closeModal()"><div id="modal"></div></div>
+<div id="toasts"></div>
+<div id="printRoot"></div>
+
+<script>
+/* ================= LaudoPro v2.0 — Vistorias + Inventário ================= */
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const hoje=()=>new Date().toISOString().slice(0,10);
+const fmtData=iso=>{if(!iso)return'__________';const[a,b,c]=iso.split('-');return`${c}/${b}/${a}`};
+function toast(m,err){const t=document.createElement('div');t.className='toast'+(err?' err':'');t.textContent=m;$('#toasts').appendChild(t);setTimeout(()=>t.remove(),3200)}
+function openModal(h){$('#modal').innerHTML=h;$('#mback').classList.add('on')}
+function closeModal(){$('#mback').classList.remove('on')}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
+
+/* ---------- IndexedDB ---------- */
+const DBN='laudopro_db',ST='vistorias',KV='kv';let idb=null;
+function dbOpen(){return new Promise((res,rej)=>{const r=indexedDB.open(DBN,1);
+ r.onupgradeneeded=e=>{const db=e.target.result;
+  if(!db.objectStoreNames.contains(ST))db.createObjectStore(ST,{keyPath:'id'});
+  if(!db.objectStoreNames.contains(KV))db.createObjectStore(KV);};
+ r.onsuccess=()=>{idb=r.result;res()};r.onerror=()=>rej(r.error)})}
+function tx(store,mode,fn){return new Promise((res,rej)=>{const t=idb.transaction(store,mode);const rq=fn(t.objectStore(store));t.oncomplete=()=>res(rq&&rq.result);t.onerror=()=>rej(t.error)})}
+const kvGet=k=>tx(KV,'readonly',s=>s.get(k));
+const kvSet=(k,v)=>tx(KV,'readwrite',s=>s.put(v,k));
+const vAll=()=>tx(ST,'readonly',s=>s.getAll());
+const vPut=o=>tx(ST,'readwrite',s=>s.put(o));
+const vDel=id=>tx(ST,'readwrite',s=>s.delete(id));
+async function checkStorage(){try{const est=await navigator.storage.estimate();
+ $('#storageInfo').innerHTML=`Espaço usado: <b>${(est.usage/1048576).toFixed(1)} MB</b> de ~${(est.quota/1073741824).toFixed(1)} GB. Persistência: <b>${await navigator.storage.persisted()?'ativa':'solicitada'}</b>`;
+}catch(e){$('#storageInfo').textContent='Não foi possível estimar.'}}
+
+/* ---------- constantes ---------- */
+let CFG={nome:'',creci:'',cnpj:'',telefone:'',email:'',endereco:'',cidade:'',vistoriador:'',logo:'',seq:1};
+let LIST=[],V=null;
+const TIPOS_V=['ENTRADA','SAÍDA','PERIÓDICA','INTERMEDIÁRIA'];
+const ESTADOS=['NOVO','EXCELENTE','BOM','REGULAR','RUIM','INOPERANTE','NA'];
+const ESTADOS_INV=['NOVO','EXCELENTE','BOM','REGULAR','RUIM','INOPERANTE'];
+const EST_LABEL={NOVO:'Novo',EXCELENTE:'Excelente',BOM:'Bom',REGULAR:'Regular',RUIM:'Ruim',INOPERANTE:'Inoperante',NA:'Não se aplica'};
+const STATE_DESC={
+ NOVO:'Item novo, sem qualquer marca de uso, em perfeito estado de conservação e funcionamento.',
+ EXCELENTE:'Item em excelente estado de conservação, com mínimas marcas de uso, funcionamento perfeito.',
+ BOM:'Item em bom estado de conservação, com leves marcas normais de uso, funcionamento regular.',
+ REGULAR:'Item com marcas visíveis de uso/desgaste (manchas, riscos, pequenas avarias); funcionamento parcial, recomenda-se reparo.',
+ RUIM:'Item em mau estado de conservação, apresentando danos/defeitos que exigem reparo ou substituição.',
+ INOPERANTE:'Item inoperante/quebrado, sem condições de uso, necessitando substituição imediata.',
+ NA:'Item inexistente neste ambiente.'};
+const COMODOS=['Sala de Estar','Sala de Jantar','Cozinha','Área de Serviço','Quarto 1','Quarto 2','Quarto 3','Suíte','Banheiro Social','Suíte — Banheiro','Lavabo','Corredor','Varanda','Varanda Gourmet','Garagem','Quintal','Jardim','Escritório','Despensa','Hall de Entrada','Escadas','Área Gourmet','Piscina','Dependência de Empregada'];
+const ITENS_PADRAO=['Pintura','Piso','Teto / Forro','Portas','Janelas / Vidros','Luminárias','Tomadas','Interruptores','Torneiras','Louças e Metais','Armários / Mobiliário'];
+function novoItem(nome){return{nome,estado:'BOM',desc:STATE_DESC.BOM}}
+/* biblioteca de inventário por categoria */
+const LIB={
+ 'Sala / Estar':[['Sofá',1],['Poltrona',1],['Mesa de centro',1],['Rack',1],['Estante / Prateleira',1],['Tapete',1],['Cortinas',1],['Abajur',1],['Mesa de jantar',1],['Cadeiras de jantar',4],['Aparador / Buffet',1]],
+ 'Cozinha':[['Geladeira',1],['Fogão',1],['Forno elétrico',1],['Micro-ondas',1],['Lava-louças',1],['Depurador / Exaustor',1],['Air fryer',1],['Liquidificador',1],['Cafeteira',1],['Sanduicheira',1],['Filtro / Purificador de água',1],['Jogo de panelas',1],['Talheres (jogo completo)',12],['Pratos rasos/fundos (jogo)',12],['Copos',6],['Taças',4],['Utensílios de cozinha (kit: espátulas, conchas, facas)',1],['Tábua de corte',1],['Escorredor de louças',1],['Lixeira',1],['Botijão de gás',1]],
+ 'Quartos':[['Cama de casal',1],['Cama de solteiro',1],['Beliche',1],['Colchão',1],['Criado-mudo',2],['Guarda-roupa',1],['Cômoda',1],['Jogo de cama (lençol + fronhas + edredom)',1],['Travesseiros',2],['Ventilador',1],['Ar-condicionado',1],['Cadeira de quarto',1],['Espelho de corpo inteiro',1]],
+ 'Banheiros':[['Toalhas de banho',4],['Toalhas de rosto',4],['Tapete de banheiro',1],['Cesto de roupa',1],['Espelho',1],['Secador de cabelo',1],['Porta-papel / lixeira',1]],
+ 'Lavanderia / Limpeza':[['Máquina de lavar',1],['Secadora',1],['Tanque',1],['Varal',1],['Ferro de passar',1],['Tábua de passar',1],['Kit limpeza (balde, vassoura, rodo, pá)',1],['Aspirador de pó',1]],
+ 'Eletrônicos':[['TV',1],['Controle remoto da TV',1],['Roteador Wi-Fi',1],['Aparelho de som',1],['Smart speaker (Alexa/Google)',1],['Extensões/filtros de linha',1]],
+ 'Varanda / Área Externa':[['Mesa externa',1],['Cadeiras externas',4],['Espreguiçadeira',2],['Churrasqueira',1],['Kit churrasco (espetos, grelha, pegador)',1],['Rede',1],['Guarda-sol',1],['Bicicleta',1]],
+ 'Decoração':[['Quadros',1],['Vasos / plantas ornamentais',1],['Objetos decorativos',1],['Luminárias decorativas',1],['Espelhos decorativos',1]],
+ 'Outros':[]
+};
+const LIB_CATS=Object.keys(LIB);
+const LIB_ICONS={'Sala / Estar':'🛋️','Cozinha':'🍳','Quartos':'🛏️','Banheiros':'🛁','Lavanderia / Limpeza':'🧺','Eletrônicos':'📺','Varanda / Área Externa':'🌴','Decoração':'🖼️','Outros':'📦'};
+
+/* ---------- foto ---------- */
+function compress(file,max,q,cb){const img=new Image();const url=URL.createObjectURL(file);
+ img.onload=()=>{let w=img.width,h=img.height;const r=Math.min(max/w,max/h,1);w=Math.round(w*r);h=Math.round(h*r);
+ const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);
+ cb(c.toDataURL('image/jpeg',q));URL.revokeObjectURL(url)};
+ img.onerror=()=>{URL.revokeObjectURL(url);toast('Falha ao ler imagem',1)};img.src=url}
+
+/* ---------- navegação ---------- */
+const TABINFO={cfg:['Imobiliária / Corretor','Configurações que aparecem na capa dos laudos'],lista:['Laudos Emitidos','Histórico completo de vistorias'],novo:['Nova Vistoria','Elaboração do laudo e inventário'],bck:['Backup','Segurança dos dados']};
+function goTab(t){document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));$('#t-'+t).classList.add('on');document.querySelectorAll('.nav-it').forEach(b=>b.classList.toggle('on',b.dataset.t===t));$('#pgTitle').textContent=TABINFO[t][0];$('#pgCrumb').textContent=TABINFO[t][1];window.scrollTo({top:0})}
+document.querySelectorAll('.nav-it').forEach(b=>b.onclick=()=>goTab(b.dataset.t));
+
+/* ---------- config ---------- */
+function renderCfg(){
+ $('#cfgForm').innerHTML=[['nome','Nome da Imobiliária / Corretor'],['creci','CRECI'],['cnpj','CNPJ/CPF'],['telefone','Telefone'],['email','E-mail'],['endereco','Endereço'],['cidade','Cidade/UF'],['vistoriador','Nome do Vistoriador Padrão']].map(f=>`<div class="field"><label>${f[1]}</label><input id="cf_${f[0]}" value="${esc(CFG[f[0]])}"></div>`).join('')+
+ `<div class="field"><label>Logotipo (PNG/JPG)</label><input type="file" accept="image/*" onchange="if(this.files[0])compress(this.files[0],400,.9,d=>{CFG.logo=d;saveCfg();toast('Logotipo carregado')})"></div>`;
+ $('#logoPrev').innerHTML=CFG.logo?`<img src="${CFG.logo}" style="max-height:54px;border-radius:8px;border:1px solid var(--line)">`:'';
+}
+async function saveCfg(){['nome','creci','cnpj','telefone','email','endereco','cidade','vistoriador'].forEach(k=>CFG[k]=$('#cf_'+k).value.trim());await kvSet('cfg',CFG);toast('Configurações salvas')}
+
+/* ---------- nova vistoria ---------- */
+function normalize(v){v.inventario=v.inventario||[];v.mobiliado=!!v.mobiliado;v.leituras=v.leituras||{energia:'',agua:'',gas:''};v.comodos=v.comodos||[];return v}
+async function novaVistoria(){
+ const num='LVD-'+new Date().getFullYear()+'-'+String(CFG.seq).padStart(4,'0');
+ CFG.seq++;await kvSet('cfg',CFG);
+ V={id:uid(),numero:num,seq:CFG.seq-1,tipo:'ENTRADA',data:hoje(),contrato:'',
+ imovel:{endereco:'',cidade:CFG.cidade},locador:'',locatario:'',vistoriador:CFG.vistoriador||CFG.nome,
+ leituras:{energia:'',agua:'',gas:''},chaves:'',obs:'',comodos:[],mobiliado:false,inventario:[],final:false};
+ openEditor();goTab('novo');
+}
+function openEditor(){
+ $('#edIntro').style.display='none';$('#editor').style.display='block';
+ $('#f_numero').value=V.numero;
+ $('#f_tipo').innerHTML=TIPOS_V.map(t=>`<option ${V.tipo===t?'selected':''}>${t}</option>`).join('');
+ $('#f_data').value=V.data;$('#f_contrato').value=V.contrato||'';
+ $('#f_end').value=V.imovel.endereco||'';$('#f_cid').value=V.imovel.cidade||'';
+ $('#f_locador').value=V.locador||'';$('#f_locatario').value=V.locatario||'';$('#f_vist').value=V.vistoriador||'';
+ $('#f_ene').value=V.leituras.energia||'';$('#f_agua').value=V.leituras.agua||'';$('#f_gas').value=V.leituras.gas||'';
+ $('#f_chaves').value=V.chaves||'';$('#f_obs').value=V.obs||'';
+ $('#selComodo').innerHTML=COMODOS.map(c=>`<option>${c}</option>`).join('');
+ $('#f_mob').checked=V.mobiliado;
+ renderComodos();renderInv();
+}
+function cancelarEdicao(){V=null;$('#editor').style.display='none';$('#edIntro').style.display='block';goTab('lista')}
+async function salvar(final){
+ if(!V.imovel.endereco)return toast('Informe o endereço do imóvel',1);
+ if(!V.comodos.length)return toast('Adicione ao menos um cômodo',1);
+ V.final=!!final;await vPut(JSON.parse(JSON.stringify(V)));await loadList();renderLista();
+ toast(final?'Laudo '+V.numero+' finalizado':'Rascunho salvo');
+}
+
+/* ---------- cômodos ---------- */
+function addComodoSel(){addComodo($('#selComodo').value)}
+function addComodoCustom(){
+ openModal(`<h2>Cômodo Personalizado</h2><div class="field" style="margin-top:12px"><label>Nome do ambiente</label><input id="mc_nome" placeholder="Ex.: Sótão, Edícula, Ateliê..."></div><div style="display:flex;gap:10px;margin-top:14px"><button class="btn btn-p" onclick="(()=>{const n=$('#mc_nome').value.trim();if(!n)return toast('Informe o nome',1);addComodo(n);closeModal()})()">Adicionar</button><button class="btn btn-ol" onclick="closeModal()">Cancelar</button></div>`);
+ $('#mc_nome').focus();
+}
+function addComodo(nome){
+ const existente=V.comodos.find(c=>c.nome===nome);
+ const c={id:uid(),nome:existente?nome+' ('+(V.comodos.filter(x=>x.nome.startsWith(nome)).length)+')':nome,itens:ITENS_PADRAO.map(novoItem),obs:'',fotos:[]};
+ V.comodos.push(c);renderComodos();
+ const el=$('#room_'+c.id);if(el)el.scrollIntoView({behavior:'smooth',block:'center'});
+}
+function delComodo(id){const c=V.comodos.find(x=>x.id===id);openModal(`<h2>Remover "${esc(c.nome)}"?</h2><p style="margin:12px 0;color:var(--muted)">As ${c.fotos.length} foto(s) deste cômodo também serão removidas.</p><div style="display:flex;gap:10px"><button class="btn btn-d" onclick="V.comodos=V.comodos.filter(x=>x.id!=='${id}');renderComodos();closeModal()">Remover</button><button class="btn btn-ol" onclick="closeModal()">Cancelar</button></div>`)}
+function setEstado(ev,rid,i,val){const c=V.comodos.find(x=>x.id===rid);c.itens[i].estado=val;c.itens[i].desc=STATE_DESC[val];ev.target.closest('tr').querySelector('.idesc').value=STATE_DESC[val]}
+function setItemDesc(rid,i,val){V.comodos.find(x=>x.id===rid).itens[i].desc=val}
+function addItemCustom(rid){
+ openModal(`<h2>Novo Item de Vistoria</h2><div class="field" style="margin-top:12px"><label>Nome do item</label><input id="mi_nome" placeholder="Ex.: Ar-condicionado, Box do banheiro..."></div><div style="display:flex;gap:10px;margin-top:14px"><button class="btn btn-p" onclick="(()=>{const n=$('#mi_nome').value.trim();if(!n)return toast('Informe o nome',1);V.comodos.find(x=>x.id==='${rid}').itens.push(novoItem(n));renderComodos();closeModal()})()">Adicionar</button><button class="btn btn-ol" onclick="closeModal()">Cancelar</button></div>`);
+}
+function delItem(rid,i){V.comodos.find(x=>x.id===rid).itens.splice(i,1);renderComodos()}
+function photoInput(rid){
+ const inp=document.createElement('input');inp.type='file';inp.accept='image/*';inp.multiple=true;inp.capture='environment';
+ inp.onchange=()=>{const files=[...inp.files];if(!files.length)return;let done=0;const c=V.comodos.find(x=>x.id===rid);
+  files.forEach(f=>compress(f,1100,.72,d=>{c.fotos.push({id:uid(),data:d});if(++done===files.length){renderRoom(rid);toast(files.length+' foto(s) adicionada(s)')}}))};
+ inp.click();
+}
+function delFoto(rid,fid){const c=V.comodos.find(x=>x.id===rid);c.fotos=c.fotos.filter(f=>f.id!==fid);renderRoom(rid)}
+function totalFotos(v){return v.comodos.reduce((a,c)=>a+c.fotos.length,0)+(v.inventario||[]).filter(i=>i.foto).length}
+function roomHTML(c,startNum){
+ let n=startNum;
+ const rows=c.itens.map((it,i)=>`<tr>
+  <td style="width:180px"><b>${esc(it.nome)}</b></td>
+  <td style="width:150px"><select onchange="setEstado(event,'${c.id}',${i},this.value)">${ESTADOS.map(e=>`<option value="${e}" ${it.estado===e?'selected':''}>${EST_LABEL[e]}</option>`).join('')}</select></td>
+  <td><input class="idesc" value="${esc(it.desc)}" oninput="setItemDesc('${c.id}',${i},this.value)"></td>
+  <td style="width:34px"><button class="btn btn-d btn-sm" onclick="delItem('${c.id}',${i})">✕</button></td></tr>`).join('');
+ const fotos=c.fotos.map(f=>{const num=String(++n).padStart(2,'0');
+  return `<div class="fitem"><img src="${f.data}"><span class="fnum">Foto ${num}</span><button class="fdel" onclick="delFoto('${c.id}','${f.id}')">✕</button></div>`}).join('');
+ return `<div class="rcard" id="room_${c.id}">
+  <div class="rhd"><b>🚪 ${esc(c.nome)}</b><span class="badge b-blue">${c.fotos.length} foto(s)</span><span class="badge b-gray">${c.itens.length} itens</span><button class="btn btn-d btn-sm" onclick="delComodo('${c.id}')">Remover</button></div>
+  <div class="rbody">
+   <table class="tbl-itens"><thead><tr><th>Item</th><th>Estado</th><th>Descrição padrão (editável)</th><th></th></tr></thead><tbody>${rows}</tbody></table>
+   <div style="margin:8px 0"><button class="btn btn-ol btn-sm" onclick="addItemCustom('${c.id}')">➕ Item personalizado</button></div>
+   <div class="field" style="margin-top:8px"><label>Observações deste cômodo</label><textarea oninput="V.comodos.find(x=>x.id==='${c.id}').obs=this.value">${esc(c.obs)}</textarea></div>
+   <div style="margin-top:10px"><button class="btn btn-p btn-sm" onclick="photoInput('${c.id}')">📷 Adicionar Fotos</button>
+   <div class="fstrip">${fotos||'<span style="color:var(--muted);font-size:12.5px">Nenhuma foto — numeração automática em todo o laudo.</span>'}</div></div>
+  </div></div>`;
+}
+function renderComodos(){
+ let n=0;const parts=[];
+ V.comodos.forEach(c=>{parts.push(roomHTML(c,n));n+=c.fotos.length});
+ $('#comodosWrap').innerHTML=parts.join('')||'<div class="empty"><span class="big">🚪</span>Nenhum cômodo adicionado ainda.</div>';
+}
+function renderRoom(rid){
+ const idx=V.comodos.findIndex(c=>c.id===rid);let n=0;for(let i=0;i<idx;i++)n+=V.comodos[i].fotos.length;
+ const el=$('#room_'+rid);if(el)el.outerHTML=roomHTML(V.comodos[idx],n);
+}
+
+/* ---------- INVENTÁRIO ---------- */
+function invStartNum(){return V.comodos.reduce((a,c)=>a+c.fotos.length,0)}
+function addInvItem(nome,cat,qtd){
+ V.inventario.push({id:uid(),nome,categoria:cat,qtd:qtd||1,marca:'',estado:'BOM',obs:'',foto:null});
+ renderInv();toast('Item adicionado: '+nome);
+}
+function setInv(id,k,val){const it=V.inventario.find(x=>x.id===id);if(it)it[k]=(k==='qtd')?(parseInt(val)||1):val}
+function delInvItem(id){V.inventario=V.inventario.filter(x=>x.id!==id);renderInv()}
+function invPhoto(id){
+ const inp=document.createElement('input');inp.type='file';inp.accept='image/*';inp.capture='environment';
+ inp.onchange=()=>{if(!inp.files[0])return;compress(inp.files[0],1000,.72,d=>{V.inventario.find(x=>x.id===id).foto=d;renderInv()})};
+ inp.click();
+}
+function delInvFoto(id){V.inventario.find(x=>x.id===id).foto=null;renderInv()}
+function openLibModal(cat){
+ const itens=LIB[cat]||[];
+ openModal(`<h2>${LIB_ICONS[cat]||'📦'} ${esc(cat)}</h2><div class="sub">Clique nos itens para adicionar ao inventário (com quantidade padrão). Feche quando terminar.</div>
+ <div class="chiprow">${itens.map(i=>`<button class="chip" onclick="addInvItem('${esc(i[0])}','${esc(cat)}',${i[1]})">${esc(i[0])} <b>×${i[1]}</b></button>`).join('')||'<i style="color:var(--muted)">Categoria livre — use o item personalizado abaixo.</i>'}</div>
+ <hr style="border:0;border-top:1px dashed var(--line);margin:16px 0">
+ <div class="grid g2" style="gap:10px">
+  <div class="field"><label>Item personalizado nesta categoria</label><input id="ml_nome" placeholder="Nome do item"></div>
+  <div class="field"><label>Quantidade</label><input id="ml_qtd" type="number" min="1" value="1"></div>
+ </div>
+ <div style="display:flex;gap:10px;margin-top:12px">
+  <button class="btn btn-p" onclick="(()=>{const n=$('#ml_nome').value.trim();if(!n)return toast('Informe o nome',1);addInvItem(n,'${esc(cat)}',parseInt($('#ml_qtd').value)||1);$('#ml_nome').value='';$('#ml_qtd').value='1'})()">➕ Adicionar personalizado</button>
+  <button class="btn btn-ol" onclick="closeModal()">Concluído</button>
+ </div>`);
+}
+function addInvCustom(){
+ openModal(`<h2>➕ Item Personalizado de Inventário</h2>
+ <div class="grid g2" style="margin-top:12px;gap:10px">
+  <div class="field"><label class="req">Nome do item</label><input id="mi2_nome" placeholder="Ex.: Piano vertical, adega climatizada..."></div>
+  <div class="field"><label>Categoria</label><select id="mi2_cat">${LIB_CATS.map(c=>`<option>${c}</option>`).join('')}</select></div>
+  <div class="field"><label>Quantidade</label><input id="mi2_qtd" type="number" min="1" value="1"></div>
+  <div class="field"><label>Estado inicial</label><select id="mi2_est">${ESTADOS_INV.map(e=>`<option ${e==='BOM'?'selected':''}>${e}</option>`).join('')}</select></div>
+ </div>
+ <div style="display:flex;gap:10px;margin-top:14px"><button class="btn btn-p" onclick="(()=>{const n=$('#mi2_nome').value.trim();if(!n)return toast('Informe o nome',1);V.inventario.push({id:uid(),nome:n,categoria:$('#mi2_cat').value,qtd:parseInt($('#mi2_qtd').value)||1,marca:'',estado:$('#mi2_est').value,obs:'',foto:null});renderInv();closeModal();toast('Item adicionado')})()">Adicionar</button><button class="btn btn-ol" onclick="closeModal()">Cancelar</button></div>`);
+}
+function renderInv(){
+ $('#invWrap').style.display=V.mobiliado?'block':'none';
+ if(!V.mobiliado)return;
+ $('#invCats').innerHTML=LIB_CATS.map(c=>`<button class="chip" onclick="openLibModal('${c}')">${LIB_ICONS[c]||'📦'} ${c}</button>`).join('');
+ let pn=invStartNum();
+ $('#invBody').innerHTML=V.inventario.length?V.inventario.map(it=>{
+  let fotoCell;
+  if(it.foto){const num=String(++pn).padStart(2,'0');fotoCell=`<div style="position:relative;display:inline-block"><img src="${it.foto}" class="inv-thumb"><span class="fnum" style="font-size:9px;padding:1px 5px">Foto ${num}</span><button class="fdel" style="width:17px;height:17px" onclick="delInvFoto('${it.id}')">✕</button></div>`}
+  else{fotoCell=`<button class="btn btn-ol btn-sm" onclick="invPhoto('${it.id}')">📷</button>`}
+  return `<tr>
+   <td><b>${esc(it.nome)}</b></td>
+   <td><select onchange="setInv('${it.id}','categoria',this.value)">${LIB_CATS.map(c=>`<option ${it.categoria===c?'selected':''}>${c}</option>`).join('')}</select></td>
+   <td><input type="number" min="1" value="${it.qtd}" onchange="setInv('${it.id}','qtd',this.value);renderInv()"></td>
+   <td><input value="${esc(it.marca)}" placeholder="marca/modelo/série" oninput="setInv('${it.id}','marca',this.value)"></td>
+   <td><select onchange="setInv('${it.id}','estado',this.value)">${ESTADOS_INV.map(e=>`<option ${it.estado===e?'selected':''}>${EST_LABEL[e]}</option>`).join('')}</select></td>
+   <td><input value="${esc(it.obs)}" placeholder="observações do item" oninput="setInv('${it.id}','obs',this.value)"></td>
+   <td>${fotoCell}</td>
+   <td><button class="btn btn-d btn-sm" onclick="delInvItem('${it.id}')">✕</button></td></tr>`}).join('')
+ :'<tr><td colspan="8"><div class="empty"><span class="big">🛋️</span>Inventário vazio — clique numa categoria acima para adicionar itens da biblioteca (80+ itens prontos).</div></td></tr>';
+ const qtdTotal=V.inventario.reduce((a,i)=>a+(parseInt(i.qtd)||0),0);
+ $('#invCount').textContent=V.inventario.length+' item(ns) · '+qtdTotal+' unidade(s) no total';
+}
+
+/* ---------- lista ---------- */
+async function loadList(){LIST=await vAll();LIST.forEach(normalize);LIST.sort((a,b)=>b.seq-a.seq)}
+function renderLista(){
+ const q=($('#lstSearch').value||'').toLowerCase();
+ const list=LIST.filter(v=>(v.numero+v.imovel.endereco+v.locador+v.locatario).toLowerCase().includes(q));
+ const fotos=LIST.reduce((a,v)=>a+totalFotos(v),0);
+ $('#statsRow').innerHTML=[['📁',LIST.length,'Laudos emitidos'],['🔑',LIST.filter(v=>v.tipo==='ENTRADA').length,'Vistorias de entrada'],['🚪',LIST.filter(v=>v.tipo==='SAÍDA').length,'Vistorias de saída'],['🛋️',LIST.filter(v=>v.mobiliado&&v.inventario.length).length,'Com inventário']].map(s=>`<div class="stat"><span class="ic">${s[0]}</span><div class="n">${s[1]}</div><div class="l">${s[2]}</div></div>`).join('');
+ $('#lstBody').innerHTML=list.length?list.map(v=>{const bc=v.tipo==='ENTRADA'?'b-green':v.tipo==='SAÍDA'?'b-orange':'b-blue';
+ return `<tr><td><b>${esc(v.numero)}</b></td><td><span class="badge ${bc}">${v.tipo}</span></td><td><small>${esc(v.imovel.endereco)}</small></td>
+ <td><small>${esc(v.locador||'—')}<br>${esc(v.locatario||'—')}</small></td><td>${fmtData(v.data)}</td><td>${totalFotos(v)}</td>
+ <td>${v.mobiliado&&v.inventario.length?`<span class="badge b-gold">🛋️ ${v.inventario.length} itens</span>`:'<span class="badge b-gray">—</span>'}</td>
+ <td>${v.final?'<span class="badge b-gold">Finalizado</span>':'<span class="badge b-gray">Rascunho</span>'}</td>
+ <td class="acts">
+  <button class="btn btn-g btn-sm" onclick="printById('${v.id}')">🖨️ PDF</button>
+  <button class="btn btn-ol btn-sm" title="Ficha de inventário A4/A3 (plastificar)" onclick="posterById('${v.id}')">📌</button>
+  <button class="btn btn-ol btn-sm" onclick="editById('${v.id}')">✏️</button>
+  <button class="btn btn-ol btn-sm" title="Duplicar (entrada→saída)" onclick="dupById('${v.id}')">⧉</button>
+  <button class="btn btn-d btn-sm" onclick="delById('${v.id}')">🗑️</button>
+ </td></tr>`}).join('')
+ :'<tr><td colspan="9"><div class="empty"><span class="big">📁</span>Nenhum laudo encontrado.</div></td></tr>';
+}
+function editById(id){V=normalize(JSON.parse(JSON.stringify(LIST.find(x=>x.id===id))));openEditor();goTab('novo');toast('Laudo '+V.numero+' carregado')}
+function dupById(id){
+ const c=normalize(JSON.parse(JSON.stringify(LIST.find(x=>x.id===id))));
+ c.id=uid();c.seq=CFG.seq++;c.numero='LVD-'+new Date().getFullYear()+'-'+String(c.seq).padStart(4,'0');
+ c.data=hoje();c.final=false;
+ if(c.tipo==='ENTRADA')c.tipo='SAÍDA';
+ (async()=>{await kvSet('cfg',CFG);await vPut(c);await loadList();renderLista();toast('Duplicado como '+c.numero+' ('+c.tipo+')')})();
+}
+function delById(id){openModal(`<h2>Excluir laudo?</h2><p style="margin:12px 0;color:var(--muted)">O laudo, fotos e inventário serão removidos.</p><div style="display:flex;gap:10px"><button class="btn btn-d" onclick="(async()=>{await vDel('${id}');await loadList();renderLista();closeModal();toast('Laudo excluído')})()">Excluir</button><button class="btn btn-ol" onclick="closeModal()">Cancelar</button></div>`)}
+function printById(id){printV(LIST.find(x=>x.id===id))}
+function posterById(id){abrirPosterModal(LIST.find(x=>x.id===id))}
+
+/* ---------- LAUDO PDF ---------- */
+function criticos(v){const out=[];v.comodos.forEach(c=>c.itens.forEach(it=>{if(it.estado==='RUIM'||it.estado==='INOPERANTE')out.push({comodo:c.nome,item:it.nome,estado:it.estado,desc:it.desc})}));return out}
+function buildLaudo(v,forPrint){
+ let n=0,secN=1;const sec=t=>`<h3 class="sec">${secN++}. ${t}</h3>`;
+ const comodos=v.comodos.map((c,ci)=>{
+  const rows=c.itens.filter(it=>it.estado!=='NA').map((it,i)=>`<tr><td style="width:7mm;text-align:center">${i+1}</td><td><b>${esc(it.nome)}</b></td><td style="width:24mm"><span class="st st-${it.estado}">${EST_LABEL[it.estado].toUpperCase()}</span></td><td>${esc(it.desc)}</td></tr>`).join('');
+  const na=c.itens.filter(it=>it.estado==='NA').map(it=>it.nome).join(', ');
+  const fotos=c.fotos.map(f=>{const num=String(++n).padStart(2,'0');return `<div class="foto"><img src="${f.data}"><div class="cap">Foto ${num} — ${esc(c.nome)}</div></div>`}).join('');
+  return `<h4 class="sub">${ci+1}. ${esc(c.nome)}</h4>
+   ${rows?`<table class="it"><thead><tr><th>#</th><th>Item</th><th>Estado</th><th>Descrição do Estado de Conservação</th></tr></thead><tbody>${rows}</tbody></table>`:''}
+   ${na?`<p style="font-size:8.6pt;color:#666;margin-bottom:2mm"><i>Não se aplica: ${esc(na)}.</i></p>`:''}
+   ${c.obs?`<div class="obs"><b>Observações:</b> ${esc(c.obs)}</div>`:''}
+   ${fotos?`<div class="fgrid">${fotos}</div>`:''}`;
+ }).join('');
+ /* inventário no laudo */
+ let invHTML='';const invFotoCaps=[];
+ if(v.mobiliado&&v.inventario.length){
+  invHTML+=sec('Inventário de Bens Móveis');
+  invHTML+=`<p style="font-size:9.6pt;margin-bottom:2.5mm">Relação completa dos bens móveis que guarnecem o imóvel e integram a locação, conferidos nesta data:</p>`;
+  let rows='',lastCat='';let i=0;
+  const ord=[...v.inventario].sort((a,b)=>a.categoria.localeCompare(b.categoria));
+  ord.forEach(it=>{
+   if(it.categoria!==lastCat){lastCat=it.categoria;rows+=`<tr class="catrow"><td colspan="6">${LIB_ICONS[it.categoria]||'📦'} ${esc(it.categoria)}</td></tr>`}
+   rows+=`<tr><td style="width:7mm;text-align:center">${++i}</td><td><b>${esc(it.nome)}</b>${it.obs?'<br><small style="color:#555">'+esc(it.obs)+'</small>':''}</td><td style="width:12mm;text-align:center">${it.qtd}</td><td>${esc(it.marca||'—')}</td><td style="width:22mm"><span class="st st-${it.estado}">${EST_LABEL[it.estado].toUpperCase()}</span></td><td style="width:20mm;text-align:center">${it.foto?'Foto '+String(++n).padStart(2,'0'):'—'}</td></tr>`;
+   if(it.foto)invFotoCaps.push({foto:it.foto,num:String(n).padStart(2,'0'),nome:it.nome});
+  });
+  invHTML+=`<table class="it"><thead><tr><th>#</th><th>Item</th><th>Qtd.</th><th>Marca/Modelo</th><th>Estado</th><th>Foto</th></tr></thead><tbody>${rows}</tbody></table>`;
+  if(invFotoCaps.length)invHTML+=`<div class="fgrid">${invFotoCaps.map(f=>`<div class="foto"><img src="${f.foto}"><div class="cap">Foto ${f.num} — Inventário: ${esc(f.nome)}</div></div>`).join('')}</div>`;
+ }
+ const crit=criticos(v);
+ const critHTML=sec('Ocorrências Críticas')+(crit.length?`<table class="it"><thead><tr><th>Ambiente</th><th>Item</th><th>Estado</th><th>Descrição</th></tr></thead><tbody>${crit.map(c=>`<tr><td>${esc(c.comodo)}</td><td><b>${esc(c.item)}</b></td><td><span class="st st-${c.estado}">${EST_LABEL[c.estado].toUpperCase()}</span></td><td>${esc(c.desc)}</td></tr>`).join('')}</tbody></table>`:`<p style="font-size:9.6pt">Nenhuma ocorrência crítica foi identificada nesta vistoria.</p>`);
+ const declExtra=(v.mobiliado&&v.inventario.length)?` Declaram ainda que os <b>${v.inventario.length} bens móveis relacionados no Inventário</b> integram a presente locação, obrigando-se o LOCATÁRIO a conservá-los e restituí-los no mesmo estado, respondendo por danos, extravios ou faltas, ressalvado o desgaste natural do uso.`:'';
+ return `<div class="lt">
+ ${forPrint?`<div class="runfoot">${esc(CFG.nome)} · ${esc(CFG.cnpj||'')} · Laudo de Vistoria ${esc(v.numero)} · ${totalFotos(v)} fotos${v.mobiliado&&v.inventario.length?' · '+v.inventario.length+' bens em inventário':''} · gerado pelo LaudoPro</div>`:''}
+ <div class="lt-cover"><div class="lt-frame">
+  ${CFG.logo?`<div class="logo"><img src="${CFG.logo}"></div>`:''}
+  <div class="lt-imo">${esc(CFG.nome||'IMOBILIÁRIA / CORRETOR')}</div>
+  <div class="lt-imo-sub">${esc(CFG.cnpj||'')} · ${esc(CFG.creci||'')} · ${esc(CFG.endereco||'')} · ${esc(CFG.telefone||'')}</div>
+  <div class="lt-orn">❧ ✦ ❧</div>
+  <div class="lt-title">Laudo de Vistoria</div>
+  <div class="lt-num">VISTORIA DE ${esc(v.tipo)} — Nº ${esc(v.numero)}</div>
+  <div class="lt-qual">${esc(v.imovel.endereco)}${v.imovel.cidade?' · '+esc(v.imovel.cidade):''}<br>Locador: ${esc(v.locador||'____________')} · Locatário: ${esc(v.locatario||'____________')}${v.mobiliado&&v.inventario.length?'<br><b style="color:#8a6a1c">IMÓVEL MOBILIADO — COM INVENTÁRIO DE BENS</b>':''}</div>
+  <div class="lt-code">EMISSÃO ${fmtData(v.data)} · ${v.comodos.length} AMBIENTES · ${totalFotos(v)} FOTOS${v.contrato?' · CONTRATO '+esc(v.contrato):''}</div>
+ </div></div>
+ <table class="lt-hdbar"><tr><td><b>${esc(CFG.nome)}</b><br>${esc(CFG.creci||'')}</td><td class="r"><b>LAUDO DE VISTORIA ${esc(v.tipo)} Nº ${esc(v.numero)}</b><br>Emitido em ${fmtData(v.data)}</td></tr></table>
+ ${sec('Identificação')}
+ <table class="idt"><tr><td><b>Imóvel</b>${esc(v.imovel.endereco)}${v.imovel.cidade?' — '+esc(v.imovel.cidade):''}</td><td><b>Contrato vinculado</b>${esc(v.contrato||'—')}</td></tr><tr>
+  <td><b>Locador</b>${esc(v.locador||'______________________')}</td><td><b>Locatário</b>${esc(v.locatario||'______________________')}</td></tr><tr>
+  <td><b>Vistoriador</b>${esc(v.vistoriador||'______________________')}</td><td><b>Data / Tipo</b>${fmtData(v.data)} · ${esc(v.tipo)}</td></tr></table>
+ ${sec('Leituras e Chaves')}
+ <table class="idt"><tr><td><b>Energia</b>${esc(v.leituras.energia||'—')}</td><td><b>Água</b>${esc(v.leituras.agua||'—')}</td><td><b>Gás</b>${esc(v.leituras.gas||'—')}</td></tr><tr><td colspan="3"><b>Chaves</b>${esc(v.chaves||'—')}</td></tr></table>
+ ${sec('Descrição dos Ambientes')}${comodos}
+ ${invHTML}${critHTML}
+ ${sec('Observações Gerais')}${v.obs?`<div class="obs">${esc(v.obs)}</div>`:'<p style="font-size:9.6pt">Nenhuma observação geral registrada.</p>'}
+ ${sec('Declaração e Assinaturas')}
+ <div class="decl">As partes acima identificadas declaram ter recebido o presente <b>LAUDO DE VISTORIA DE ${esc(v.tipo)} Nº ${esc(v.numero)}</b>, contendo ${v.comodos.length} ambientes descritos e ${totalFotos(v)} fotos numeradas, que passa a fazer parte integrante e inseparável do Contrato de Locação${v.contrato?' '+esc(v.contrato):''} firmado entre LOCADOR e LOCATÁRIO do imóvel objeto deste laudo, servindo como único parâmetro para a restituição do imóvel e apuração de eventuais danos, nos termos dos arts. 22 e 23, III, da Lei nº 8.245/91.${declExtra} Por ser expressão da verdade, firmam o presente.</div>
+ <div class="lt-sig">
+  <div class="slot"><div class="ln"></div><div class="nm">${esc(v.vistoriador||'')}</div><div class="dc">Vistoriador — ${esc(CFG.nome)}</div></div>
+  <div class="slot"><div class="ln"></div><div class="nm">${esc(v.locador||'')}</div><div class="dc">Locador(a)</div></div>
+  <div class="slot"><div class="ln"></div><div class="nm">${esc(v.locatario||'')}</div><div class="dc">Locatário(a)</div></div>
+ </div></div>`;
+}
+function printV(v){
+ if(!v)return toast('Salve a vistoria antes de imprimir',1);
+ $('#printRoot').innerHTML='<style>@page{size:A4 portrait;margin:18mm 16mm}</style>'+buildLaudo(v,true);
+ setTimeout(()=>window.print(),120);
+}
+
+/* ---------- FICHA/CARTAZ DE INVENTÁRIO (A4/A3 — plastificar) ---------- */
+function abrirPosterModal(v){
+ if(!v||!v.mobiliado||!v.inventario||!v.inventario.length)return toast('Ative o inventário (imóvel mobiliado) e adicione itens primeiro',1);
+ const total=v.inventario.length;const rec=total>35?'A3':'A4';
+ openModal(`<h2>📌 Ficha de Inventário — Cartaz para o Imóvel</h2>
+ <div class="sub">Tabela organizada para <b>imprimir, plastificar e fixar no imóvel</b> (temporada ou similar). Plastificada, o inquilino marca a coluna "Conferido ✔" com <b>caneta de quadro branco</b> na entrada e apaga na saída.</div>
+ <div style="margin:10px 0"><span class="badge b-gold">${total} itens · formato recomendado: ${rec}</span></div>
+ <div class="pst-sel">
+  <div class="pst-opt" onclick="printPoster(V||LIST.find(x=>x.id==='${v.id}'),'A4');closeModal()"><b>A4</b><small>21 × 29,7 cm — ideal até ~35 itens</small>${rec==='A4'?'<span class="badge b-green rec">✔ RECOMENDADO</span>':''}</div>
+  <div class="pst-opt" onclick="printPoster(V||LIST.find(x=>x.id==='${v.id}'),'A3');closeModal()"><b>A3</b><small>29,7 × 42 cm — para inventários grandes (&gt;35 itens) ou leitura à distância</small>${rec==='A3'?'<span class="badge b-green rec">✔ RECOMENDADO</span>':''}</div>
+ </div>
+ <div style="font-size:12.5px;color:var(--muted)">💡 Dica: imprima 2 vias — uma para plastificar e fixar no imóvel, outra para anexar ao laudo/contrato assinada pelo inquilino.</div>`);
+}
+function buildPoster(v,size){
+ const ord=[...v.inventario].sort((a,b)=>a.categoria.localeCompare(b.categoria)||a.nome.localeCompare(b.nome));
+ let rows='',lastCat='',totalUn=0;
+ ord.forEach(it=>{
+  if(it.categoria!==lastCat){lastCat=it.categoria;rows+=`<tr class="catrow"><td colspan="5">${LIB_ICONS[it.categoria]||'📦'} ${esc(it.categoria)}</td></tr>`}
+  totalUn+=parseInt(it.qtd)||1;
+  rows+=`<tr><td><b>${esc(it.nome)}</b>${it.marca?' <span style="color:#555;font-size:.85em">('+esc(it.marca)+')</span>':''}${it.obs?' <span style="color:#777;font-size:.85em">— '+esc(it.obs)+'</span>':''}</td><td class="c" style="width:16mm">${it.qtd}</td><td class="c" style="width:26mm">${EST_LABEL[it.estado]}</td><td class="c chk" style="width:22mm"></td><td class="c chk" style="width:22mm"></td></tr>`;
+ });
+ return `<div class="pst ${size==='A3'?'a3':''}"><div class="pst-frame">
+ <div class="pst-hd">
+  <div class="imo">${CFG.logo?`<img src="${CFG.logo}">`:''}<span class="imon">${esc(CFG.nome||'IMOBILIÁRIA')}</span></div>
+  <h1>Inventário do Imóvel</h1>
+  <div class="sub"><b>${esc(v.imovel.endereco)}</b>${v.imovel.cidade?' · '+esc(v.imovel.cidade):''}<br>${ord.length} itens · ${totalUn} unidades · Laudo de referência nº ${esc(v.numero)} · ${fmtData(v.data)}</div>
+ </div>
+ <div class="pst-rules"><b class="t">⚠️ Instruções ao Locatário / Hóspede</b>
+  <ol><li>Este quadro relaciona <b>todos os bens inclusos na locação</b> deste imóvel.</li>
+  <li>Na <b>entrada</b>, confira cada item e marque a coluna "Entrada ✔"; comunique imediatamente qualquer divergência, falta ou dano.</li>
+  <li>Na <b>saída</b>, todos os itens devem estar presentes e no mesmo estado, ressalvado o desgaste natural do uso.</li>
+  <li>Itens danificados, manchados ou extraviados serão <b>cobrados conforme o contrato de locação e o laudo de vistoria</b>.</li>
+  <li>Dúvidas ou ocorrências durante a estadia: contate o responsável abaixo.</li></ol>
+ </div>
+ <table><thead><tr><th>Item (marca/modelo entre parênteses)</th><th style="width:16mm">Qtd.</th><th style="width:26mm">Estado</th><th style="width:22mm">Entrada ✔</th><th style="width:22mm">Saída ✔</th></tr></thead><tbody>${rows}</tbody></table>
+ <div class="pst-ft">
+  <div><b>Responsável / Contato:</b> ${esc(CFG.nome||'________')} — ${esc(CFG.telefone||'________')}${CFG.email?' · '+esc(CFG.email):''}${CFG.creci?' · '+esc(CFG.creci):''}</div>
+  <div style="text-align:right">Documento auxiliar do <b>Laudo de Vistoria nº ${esc(v.numero)}</b><br>${esc(CFG.cidade||'')}, ${fmtData(v.data)}</div>
+ </div>
+ <div class="ciente"><div class="ln">Locatário / Hóspede — Ciente na entrada</div><div class="ln" style="flex:.5">Data</div></div>
+ </div></div>`;
+}
+function printPoster(v,size){
+ if(!v||!v.inventario||!v.inventario.length)return toast('Sem itens no inventário',1);
+ const marg=size==='A3'?'10mm':'9mm';
+ $('#printRoot').innerHTML=`<style>@page{size:${size} portrait;margin:${marg}}</style>`+buildPoster(v,size);
+ setTimeout(()=>window.print(),120);
+}
+
+/* ---------- backup ---------- */
+function exportBackup(){
+ const data=JSON.stringify({_app:'laudopro',_ver:2,_data:new Date().toISOString(),cfg:CFG,vistorias:LIST},null,1);
+ const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data],{type:'application/json'}));
+ a.download='backup-laudopro-'+hoje()+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),4000);toast('Backup exportado');
+}
+function importBackup(inp){
+ if(!inp.files[0])return;const r=new FileReader();
+ r.onload=async e=>{try{
+  const d=JSON.parse(e.target.result);if(!d.vistorias)throw 0;
+  if(d.cfg){CFG={...CFG,...d.cfg};await kvSet('cfg',CFG)}
+  for(const v of d.vistorias)await vPut(normalize(v));
+  await loadList();renderCfg();renderLista();toast('Backup importado: '+d.vistorias.length+' laudo(s)');
+ }catch(err){toast('Arquivo de backup inválido',1)}};
+ r.readAsText(inp.files[0]);inp.value='';
+}
+
+/* ---------- init ---------- */
+(async function init(){
+ try{await dbOpen()}catch(e){toast('Erro ao abrir o IndexedDB: '+e,1);return}
+ if(navigator.storage&&navigator.storage.persist)navigator.storage.persist();
+ const c=await kvGet('cfg');if(c)CFG={...CFG,...c};
+ await loadList();renderCfg();renderLista();checkStorage();
+})();
+</script>
+</body>
+</html>
